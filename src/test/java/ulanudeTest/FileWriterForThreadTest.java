@@ -14,11 +14,9 @@ public class FileWriterForThreadTest {
     private Logger LOGGER = Logger.getLogger(FileWriterForThreadTest.class);
     private String name = "temporary";
 
-    @After
-    public void after() {
-        new File("temporary").delete();
-    }
-
+    /**
+     * проверка корректности записи в файл результата поиска
+     */
     @Test
     public void writeResultToFileTest() {
         Map<String, Long> map = new HashMap<>();
@@ -28,11 +26,9 @@ public class FileWriterForThreadTest {
         String result = "";
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("temporary")))) {
             result = reader.readLine();
-        } catch (FileNotFoundException e) {
-            LOGGER.error(e.getMessage(), e);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        Assert.assertTrue("Result string is not correct", result.equals("[SOURCE] -> \"WORD\" @1"));
+        Assert.assertEquals("Result string is not correct", result, "[SOURCE] -> \"WORD\" @1");
     }
 }

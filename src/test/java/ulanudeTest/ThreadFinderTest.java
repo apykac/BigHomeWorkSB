@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.util.Map;
 
 public class ThreadFinderTest {
-    ThreadFinder threadFinder;
-    InputStream inputStream;
+    private ThreadFinder threadFinder;
+    private InputStream inputStream;
 
     @Before
     public void before() {
@@ -37,6 +37,9 @@ public class ThreadFinderTest {
         threadFinder = null;
     }
 
+    /**
+     * Проверка правильности поиска слова в исходных данных
+     */
     @Test
     public void findCoincidencesTest() {
         Map<String, Long> result;
@@ -46,9 +49,13 @@ public class ThreadFinderTest {
             return;
         }
         Assert.assertTrue("Words is wrong", result.containsKey("temp"));
-        Assert.assertTrue("Result of search is wrong", result.get("temp") == 3);
+        Assert.assertSame("Result of search is wrong", result.get("temp") , 3L);
     }
 
+    /**
+     * проверка на исключение метода поиска слова в исходных данных
+     * @throws IOException some errors
+     */
     @Test(expected = IOException.class)
     public void findCoincidencesTestWithException() throws IOException {
         threadFinder = new ThreadFinder(new FileInputStream("thereisnofile"), "",null,0);
