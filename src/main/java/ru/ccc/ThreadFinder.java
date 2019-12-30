@@ -1,16 +1,15 @@
-package ulanude;
+package ru.ccc;
 
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 /**
  * Класс нить для поиска слов в файле
  */
-public class ThreadFinder implements Callable {
+public class ThreadFinder implements Callable<Long> {
     final static Logger LOGGER = Logger.getLogger(ThreadFinder.class);
     /**
      * @param result содержит работу нити ввиде ввиде пары (СЛОВО) -> (КОЛИЧЕСТВО_ВХОЖДЕНИЙ_В_ФАЙЛЕ)
@@ -19,7 +18,7 @@ public class ThreadFinder implements Callable {
      * @param words спиок слов которых необходимо найти в файле
      */
     private InputStream inputStream;
-    private long biggestLength = 0;
+    private long biggestLength;
     private String source;
     private String[] words;
 
@@ -43,8 +42,7 @@ public class ThreadFinder implements Callable {
         boolean flag = false;
         while ((s = reader.readLine()) != null) {
             flag = false;
-            buffer.append(s.toLowerCase());
-            buffer.append(' ');
+            buffer.append(s.toLowerCase()).append(' ');
             if ((buffer.length() < buffer.capacity() - 100_000) || (biggestLength > buffer.length())) continue;
             findAllCoincidencesInBuffer(buffer, result);
             flag = true;
@@ -66,7 +64,7 @@ public class ThreadFinder implements Callable {
                 if (isAWord(bufferString, j, i))
                     if (result.containsKey(words[i])) result.put(words[i], result.get(words[i]) + 1);
                     else result.put(words[i], 1L);
-                j+=words[i].length();
+                j += words[i].length();
             }
         }
     }
@@ -82,9 +80,7 @@ public class ThreadFinder implements Callable {
      */
     private boolean isAWord(StringBuilder sb, int begin, int index) {
         if (((begin - 1) >= 0) && !isCharPunc(sb.charAt(begin - 1))) return false;
-        if (((begin + words[index].length()) < sb.length()) && !isCharPunc(sb.charAt(begin + words[index].length())))
-            return false;
-        return true;
+        return ((begin + words[index].length()) >= sb.length()) || isCharPunc(sb.charAt(begin + words[index].length()));
     }
 
     /**
@@ -94,9 +90,10 @@ public class ThreadFinder implements Callable {
      * @return символ пунктуации или пробел на переданный на вход символ
      */
     private boolean isCharPunc(char c) {
-        for (int i = 0; i < ConstantContainer.punctuation.length(); i++)
-            if (c == ConstantContainer.punctuation.charAt(i)) return true;
-        return false;
+        Optional<Character> result = ConstantContainer.punctuation.chars().boxed().map(e -> (char) e.shortValue())
+                .filter(e -> Objects.equals(c, e))
+                .findFirst();
+        return result.isPresent();
     }
 
     /**
@@ -106,11 +103,11 @@ public class ThreadFinder implements Callable {
      * @throws Exception
      */
     @Override
-    public Object call() throws Exception {
+    public Long call() throws Exception {
         LOGGER.info("Start parsing by Thread: {" + Thread.currentThread().getName() + "} source: [" + source + "]");
         FileWriterForThread.writeResultToFile(source, findCoincidences());
         inputStream.close();
         LOGGER.info("Thread: {" + Thread.currentThread().getName() + "} finish parsing");
-        return 0;
+        return 0L;
     }
 }

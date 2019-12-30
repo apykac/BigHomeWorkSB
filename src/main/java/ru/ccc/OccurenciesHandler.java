@@ -1,4 +1,4 @@
-package ulanude;
+package ru.ccc;
 
 import org.apache.log4j.Logger;
 
@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -26,54 +28,58 @@ public class OccurenciesHandler implements Occurencies {
      */
     @Override
     public void getOccurencies(String[] sources, String[] words, String res) {
-        LOGGER.info("Begin of programm.");
-        File file;
+        LOGGER.info("Begin of program.");
         int cores = Runtime.getRuntime().availableProcessors();
         long maxLength = biggestWord(words);
         FileWriterForThread.setFileName(res);
         ExecutorService executor = Executors.newFixedThreadPool(cores);
         List<Future<Long>> futures = new ArrayList<>();
-        for (int i = 0; i < sources.length; i++) {
-            file = new File(sources[i]);
 
-            InputStream inputStream = null;
+        Arrays.stream(sources).forEach(source -> {
+            File file = new File(source);
+
+            InputStream inputStream;
             try {
-                inputStream = new FileInputStream(sources[i]);
+                inputStream = new FileInputStream(source);
             } catch (FileNotFoundException e) {
                 LOGGER.error(e.getMessage());
-                continue;
+                return;
             }
             // если файл слишклм большой, то он разделяется между потоками
             if (file.length() > 10_000_000) {
                 int howMuchMore = (int) (file.length() % 10_000_000);
-                int splitIndex = howMuchMore > cores ? cores : howMuchMore;
-                boolean isLastPeace = false;
+                int splitIndex = Math.min(howMuchMore, cores);
                 for (int j = 0; j < splitIndex; j++) {
-                    if (j + 1 == splitIndex) isLastPeace = true;
                     futures.add(executor.submit(new ThreadFinder(
                             inputStream,
-                            sources[i],
-                            clipArray(words, words.length / splitIndex, words.length / splitIndex * j, isLastPeace),
+                            source,
+                            clipArray(
+                                    words,
+                                    words.length / splitIndex,
+                                    words.length / splitIndex * j,
+                                    j + 1 == splitIndex),
                             maxLength)));
                 }
-                continue;
+                return;
             }
             //если файл малого размера, то он отдается одному потоку
-            futures.add(executor.submit(new ThreadFinder(inputStream, sources[i], words, maxLength)));
-        }
+            futures.add(executor.submit(new ThreadFinder(
+                    inputStream,
+                    source,
+                    words,
+                    maxLength)));
+        });
 
-        for (Future<Long> future : futures) {
+        futures.forEach(future -> {
             try {
                 future.get();
-            } catch (InterruptedException e) {
-                LOGGER.error(e.getMessage());
-            } catch (ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error(e.getMessage());
             }
-        }
+        });
 
         executor.shutdown();
-        LOGGER.info("End of programm.");
+        LOGGER.info("End of program.");
     }
 
     /**
@@ -101,10 +107,9 @@ public class OccurenciesHandler implements Occurencies {
      * @return возвращает количество символов
      */
     private long biggestWord(String[] words) {
-        long max = 0;
-        for (int i = 0; i < words.length; i++)
-            if (max < words[i].length())
-                max = words[i].length();
-        return max;
+        return Arrays.stream(words)
+                .map(String::length)
+                .max(Comparator.naturalOrder())
+                .orElse(0);
     }
 }

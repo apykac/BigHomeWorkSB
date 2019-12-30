@@ -1,10 +1,8 @@
-package ulanudeTest;
+package ru.ccc;
 
 import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import ulanude.FileWriterForThread;
 
 import java.io.*;
 import java.util.HashMap;

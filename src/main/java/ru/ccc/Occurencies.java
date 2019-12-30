@@ -1,4 +1,4 @@
-package ulanude;
+package ru.ccc;
 
 /**
  * Интерфейс =)

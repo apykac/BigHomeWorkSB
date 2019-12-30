@@ -1,4 +1,4 @@
-package ulanude;
+package ru.ccc;
 
 /**
  * Класс контейнер, содержит константы для работы программы, чтобы не создовать копии одних и техже данных
@@ -13,4 +13,7 @@ class ConstantContainer {
     public static final byte[] s_2 = "] -> \"".getBytes();
     public static final byte[] s_3 = "\" @".getBytes();
     public static final byte[] s_4 = System.lineSeparator().getBytes();
+
+    private ConstantContainer() {
+    }
 }

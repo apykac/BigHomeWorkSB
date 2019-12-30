@@ -1,7 +1,7 @@
-package ulanudeTest;
+package ru.ccc;
 
 import org.junit.*;
-import ulanude.ThreadFinder;
+import ru.ccc.ThreadFinder;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;

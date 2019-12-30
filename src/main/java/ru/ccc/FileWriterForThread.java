@@ -1,8 +1,7 @@
-package ulanude;
+package ru.ccc;
 
 import org.apache.log4j.Logger;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
@@ -18,10 +17,9 @@ public class FileWriterForThread {
      */
     private static String fileName;
 
-    public static boolean setFileName(String fileName) {
+    public static void setFileName(String fileName) {
         FileWriterForThread.fileName = fileName;
         LOGGER.info("Set a file to record the results: " + fileName);
-        return true;
     }
 
     /**
@@ -32,9 +30,7 @@ public class FileWriterForThread {
      */
     synchronized public static void writeResultToFile(String source, Map<String, Long> map) {
         LOGGER.info("Writing result of parsing of source: [" + source + "] by Thread {" + Thread.currentThread().getName() + "}");
-        for (Map.Entry<String, Long> pair : map.entrySet()) {
-            tryToWrite(source, pair.getKey(), pair.getValue());
-        }
+        map.forEach((word, value) -> tryToWrite(source, word, value));
     }
 
     /**
@@ -46,22 +42,17 @@ public class FileWriterForThread {
      *               результат записывается ввиде:
      *               [source] -> "word" @value
      */
-    private static boolean tryToWrite(String source, String word, long value) {
+    private static void tryToWrite(String source, String word, long value) {
         try (FileOutputStream writer = new FileOutputStream(fileName, true)) {
             writer.write(ConstantContainer.s_1);
             writer.write(source.getBytes());
             writer.write(ConstantContainer.s_2);
             writer.write(word.getBytes());
             writer.write(ConstantContainer.s_3);
-            writer.write(("" + value).getBytes());
+            writer.write(String.valueOf(value).getBytes());
             writer.write(ConstantContainer.s_4);
-        } catch (FileNotFoundException e1) {
-            LOGGER.error(e1.getMessage());
-            return false;
-        } catch (IOException e1) {
-            LOGGER.error(e1.getMessage());
-            return false;
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage());
         }
-        return true;
     }
 }
