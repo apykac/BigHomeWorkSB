@@ -12,12 +12,11 @@ import java.util.Map;
 
 public class FileWriterForThread {
     final static Logger LOGGER = Logger.getLogger(FileWriterForThread.class);
-    /**
-     * @param fileName путь к файлу в котором будет вестись запись результата
-     */
+
+    /** путь к файлу в котором будет вестись запись результата */
     private static String fileName;
 
-    public static void setFileName(String fileName) {
+    synchronized public static void setFileName(String fileName) {
         FileWriterForThread.fileName = fileName;
         LOGGER.info("Set a file to record the results: " + fileName);
     }
@@ -44,13 +43,13 @@ public class FileWriterForThread {
      */
     private static void tryToWrite(String source, String word, long value) {
         try (FileOutputStream writer = new FileOutputStream(fileName, true)) {
-            writer.write(ConstantContainer.s_1);
+            writer.write(ConstantContainer.S_1);
             writer.write(source.getBytes());
-            writer.write(ConstantContainer.s_2);
+            writer.write(ConstantContainer.S_2);
             writer.write(word.getBytes());
-            writer.write(ConstantContainer.s_3);
+            writer.write(ConstantContainer.S_3);
             writer.write(String.valueOf(value).getBytes());
-            writer.write(ConstantContainer.s_4);
+            writer.write(ConstantContainer.S_4);
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
         }

@@ -1,7 +1,9 @@
 package ru.ccc;
 
-import org.junit.*;
-import ru.ccc.ThreadFinder;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
